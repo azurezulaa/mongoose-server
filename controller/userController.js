@@ -1,78 +1,104 @@
 const User = require("../Model/User");
 
-const getAllUser = async (req, res) => {
+const getAllUser = async (req, res, next) => {
   try {
-    const users = await User.find({});
-    res.status(201).json({ message: "Amjilttai", users });
+    const users = await User.find();
+    if (!users) {
+      res.status(200).json({ message: "Хэрэглэгчдийн мэдээлэл хоосон байна." });
+    }
+    res.status(200).json({ message: "Хэрэглэгчдийн мэдээлэл олдлоо.", users });
   } catch (error) {
-    res.status(400).json({
-      message: "Hereglegchdiin medeelliig awhad aldaa garlaa",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-const createUser = async (req, res) => {
-  const { name, email, password } = req.body;
+const createUser = async (req, res, next) => {
+  const { name, email, password, profileImg } = req.body;
 
-  if (!name || !email || !password) {
-    res.status(400).json({ message: "Ner, email eswel nuuts ug hooson bn" });
-  }
   try {
+    if (!name || !email || !password) {
+      res
+        .status(400)
+        .json({ message: "Нэр, имэйл эсвэл нууц үг хоосон байна" });
+    }
     const user = await User.create({
       name,
       email,
       password,
+      profileImg,
     });
-    res.status(201).json({ message: "Amjilttai butgegdlee", user });
+    res.status(201).json({ message: "Амжилттай бүртгэгдлээ", user });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Burtgel amjiltgui bolloo", error: error.message });
+    next(error);
   }
 };
-const getUser = async (req, res) => {
+const getUser = async (req, res, next) => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ message: `${id} IDtai hereglegch oldsongui` });
+    res.status(400).json({ message: `ID хоосон байна` });
   }
 
   try {
     const user = await User.findById(id);
-    res.status(200).json({ message: `${id} IDtai hereglegch oldloo`, user });
+    if (!user) {
+      res.status(400).json({ message: `${id} ID-тэй хэрэглэгч олдсонгүй.` });
+    }
+    res.status(200).json({ message: `${id} IDтэй хэрэглэгч олдлоо`, user });
   } catch (error) {
-    res.status(400).json({ message: "Aldaa garlaa", error: error.message });
+    next(error);
   }
 };
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ message: `${id} IDtai hereglegch oldsongui` });
+    res.status(400).json({ message: `ID хоосон байна` });
   }
   try {
     const user = await User.findByIdAndUpdate(id, req.body, { new: true });
-    res.status(201).json({
-      message: `${id} IDtai hereglegchiin medeelel shinechlegdlee`,
+    if (!user) {
+      res.status(400).json({ message: `${id} ID-тэй хэрэглэгч олдсонгүй.` });
+    }
+    res.status(200).json({
+      message: `${id} IDтай хэрэглэгчийн мэдээлэл шинэчлэгдлээ`,
       user,
     });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Update Aldaa garlaa", error: error.message });
+    next(error);
   }
 };
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ message: `${id} IDtai hereglegch oldsongui` });
+    res.status(400).json({ message: `ID хоосон байна` });
   }
   try {
     const user = await User.findByIdAndDelete(id);
-    res.status(201).json({ message: `${id} IDtai hereglegch ustlaa`, user });
+    if (!user) {
+      res.status(400).json({ message: `${id} ID-тэй хэрэглэгч олдсонгүй.` });
+    }
+    res.status(200).json({ message: `${id} IDтэй хэрэглэгч устгагдлаа`, user });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Delete Aldaa garlaa", error: error.message });
+    next(error);
   }
 };
-module.exports = { createUser, getAllUser, getUser, updateUser, deleteUser };
+
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.find({ email, password });
+    if (!user.length) {
+      res.status(400).json({ message: `Имэйл эсвэл нууц үг буруу байна` });
+    }
+    res.status(200).json({ message: `Amjilttai newterlee`, user });
+  } catch (error) {
+    next(error);
+  }
+};
+module.exports = {
+  createUser,
+  getAllUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  login,
+};

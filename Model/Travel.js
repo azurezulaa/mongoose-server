@@ -1,12 +1,22 @@
 const mongoose = require("mongoose");
 
 const TravelSchema = new mongoose.Schema({
-  title: String,
-  images: String,
-  details: String,
-  price: Number,
-  location: String,
-  day: Number,
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    maxlength: [500, "Тайлбар хамгийн ихдээ 500 тэмдэгтээс ихгүй байна."],
+  },
+  travelImg: { type: String },
+  travelPrice: Number,
+  travelDay: Number,
+  travelLocation: String,
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+  },
 });
 const Travel = mongoose.model("Travel", TravelSchema);
 module.exports = Travel;
