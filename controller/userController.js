@@ -1,4 +1,7 @@
 const User = require("../Model/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { options } = require("../Routes/userRoute");
 
 const getAllUser = async (req, res, next) => {
   try {
@@ -83,13 +86,44 @@ const deleteUser = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { email, password } = req.body;
   try {
-    const user = await User.find({ email, password });
-    if (!user.length) {
+    const user = await User.findOne({ email: req.body.email }).select(
+      "+password"
+    );
+    if (!user) {
       res.status(400).json({ message: `Имэйл эсвэл нууц үг буруу байна` });
     }
-    res.status(200).json({ message: `Amjilttai newterlee`, user });
+    const checkPass = bcrypt.compareSync(req.body.password, user.password);
+    if (!checkPass) {
+      res.status(400).json({ message: `Имэйл эсвэл нууц үг буруу байна` });
+    }
+    const { name, _id, email, role } = user;
+    const token = jwt.sign(
+      { _id, name, email, role },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: 1200,
+      }
+    );
+    res.status(200).json({ message: `Amjilttai newterlee`, user, token });
+  } catch (error) {
+    next(error);
+  }
+  console.log("amjilttai login hiilee");
+};
+
+const register = async (req, res, next) => {
+  const { name, email, password, phone, role } = req.body;
+  try {
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role,
+    });
+    res.status(200).json({ message: `Амжилттай бүртгэгдлээ`, user });
   } catch (error) {
     next(error);
   }
@@ -101,4 +135,5 @@ module.exports = {
   updateUser,
   deleteUser,
   login,
+  register,
 };

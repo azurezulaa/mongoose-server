@@ -6,6 +6,7 @@ const {
   updateCategory,
   deleteCategory,
 } = require("../controller/catController");
+const checkRole = require("../middlewares/checkRole");
 
 const catRoute = express.Router();
 

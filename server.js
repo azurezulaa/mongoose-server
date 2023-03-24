@@ -10,6 +10,7 @@ const travelRoute = require("./Routes/travelRoute");
 const upload = require("./middlewares/upload");
 const cloudinary = require("./utils/cloudinary");
 const error = require("./middlewares/error");
+const logger = require("./middlewares/logger");
 
 const PORT = process.env.PORT;
 
@@ -17,6 +18,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(logger);
 app.use("/users", userRoute);
 app.use("/categories", catRoute);
 app.use("/travels", travelRoute);
